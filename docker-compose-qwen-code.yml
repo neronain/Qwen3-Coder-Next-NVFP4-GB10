@@ -1,0 +1,36 @@
+services:
+  coder-next:
+    image: avarok/dgx-vllm-nvfp4-kernel:v23
+    container_name: coder-next
+    restart: unless-stopped
+    ipc: host
+    shm_size: 32gb
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount โมเดลที่ดาวน์โหลดไว้เข้าสู่ Container
+      - /home/neronain/models/Qwen3-Coder-Next-NVFP4-GB10:/models/Qwen3-Coder-Next-NVFP4-GB10
+    environment:
+      # --- vLLM Blackwell/NVFP4 Backend Config ---
+      - VLLM_NVFP4_GEMM_BACKEND=marlin
+      - VLLM_TEST_FORCE_FP8_MARLIN=1
+      - VLLM_USE_FLASHINFER_MOE_FP4=0
+      - VLLM_MARLIN_USE_ATOMIC_ADD=1
+
+      # --- Model & Server Config ---
+      - MODEL=/models/Qwen3-Coder-Next-NVFP4-GB10
+      - PORT=8000
+      - MAX_MODEL_LEN=262144
+      - GPU_MEMORY_UTIL=0.90
+
+      # --- Extra VLLM Arguments ---
+      # การใส่ --served-model-name qwen3_coder ทำให้ OpenClaw เรียกใช้งานได้ทันทีโดยไม่ต้องแก้ Path ยืดยาว
+      - VLLM_EXTRA_ARGS=--served-model-name qwen3_coder --kv-cache-dtype fp8 --attention-backend flashinfer --enable-prefix-caching --enable-chunked-prefill --max-num-batched-tokens 8192 --enable-auto-tool-choice --tool-call-parser qwen3_coder
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
