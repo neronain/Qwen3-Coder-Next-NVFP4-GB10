@@ -113,3 +113,4 @@ sudo docker logs -f coder-next
 *   **Model Name:** `qwen3_coder`
 
 ---
+![~60-70T/s](https://github.com/neronain/Qwen3-Coder-Next-NVFP4-GB10/blob/main/Screenshot%202569-05-06%20at%2003.28.44.png)
